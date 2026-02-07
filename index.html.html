@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Crunchino Loyalty</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<style>
+body{font-family:Arial;margin:0;background:#fff}
+header{background:#0b1c3d;color:white;text-align:center;padding:20px}
+header p{color:#ff4fa3}
+nav{display:flex;gap:10px;justify-content:center;background:#eee;padding:10px}
+button{padding:10px;border:none;border-radius:8px;background:#0b1c3d;color:white;cursor:pointer}
+.section{display:none;max-width:800px;margin:auto;padding:20px}
+.active{display:block}
+input{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ccc}
+.box{border:2px dashed #0b1c3d;padding:15px;text-align:center;margin-top:15px}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>Crunchino Loyalty</h1>
+<p>pure and simple, made for joy</p>
+</header>
+
+<nav>
+<button onclick="show('register')">Créer compte</button>
+<button onclick="show('login')">Connexion client</button>
+<button onclick="show('adminLogin')">Admin</button>
+</nav>
+
+<!-- REGISTER -->
+<div id="register" class="section active">
+<h2>Créer compte</h2>
+<input id="rname" placeholder="Nom">
+<input id="remail" placeholder="Email">
+<input id="rpass" type="password" placeholder="Mot de passe">
+<button onclick="register()">Créer</button>
+</div>
+
+<!-- LOGIN -->
+<div id="login" class="section">
+<h2>Connexion client</h2>
+<input id="lemail" placeholder="Email">
+<input id="lpass" type="password" placeholder="Mot de passe">
+<button onclick="login()">Connexion</button>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="section">
+<h2>Espace client</h2>
+<div id="info"></div>
+
+<div class="box">
+Points fidélité :
+<div id="pts"></div>
+7 achetés → 8ème gratuit
+</div>
+
+<h3>QR Code</h3>
+<div id="qrcode"></div>
+</div>
+
+<!-- ADMIN LOGIN -->
+<div id="adminLogin" class="section">
+<h2>Admin</h2>
+<input id="apass" type="password" placeholder="Mot de passe admin">
+<button onclick="adminAuth()">Entrer</button>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="admin" class="section">
+<h2>Admin panel</h2>
+<input id="aemail" placeholder="Email client">
+<input id="apoints" placeholder="Points à ajouter">
+<button onclick="addPoints()">Ajouter</button>
+</div>
+
+<script>
+
+const API_URL="https://script.google.com/macros/s/AKfycbwv_AA7E7ETmLCJN5dmAi3evMtGC_J9Eg1a3N3tGdVJJE7AwKIXMwPqL70G2Adf2MAyig/exec";
+let user=null;
+
+function show(id){
+ document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+}
+
+/* REGISTER */
+async function register(){
+ const r=await fetch(API_URL+"?action=register&name="+rname.value+"&email="+remail.value+"&pass="+rpass.value);
+ alert((await r.json()).message);
+}
+
+/* LOGIN */
+async function login(){
+ const r=await fetch(API_URL+"?action=login&email="+lemail.value+"&pass="+lpass.value);
+ const d=await r.json();
+ if(!d.ok) return alert("Login incorrect");
+ user=d.user;
+ openDash();
+}
+
+function openDash(){
+ show('dashboard');
+ info.innerHTML=user.name+"<br>"+user.email;
+ pts.innerHTML=user.points+"/7";
+ qrcode.innerHTML="";
+ new QRCode(qrcode,user.email);
+}
+
+/* ADMIN LOGIN */
+async function adminAuth(){
+ const r=await fetch(API_URL+"?action=adminLogin&pass="+apass.value);
+ const d=await r.json();
+ if(d.ok) show('admin');
+ else alert("Mot de passe faux");
+}
+
+/* ADD POINTS */
+async function addPoints(){
+ const r=await fetch(API_URL+"?action=add&email="+aemail.value+"&points="+apoints.value);
+ alert((await r.json()).message);
+}
+
+</script>
+
+</body>
+</html>
